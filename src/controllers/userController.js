@@ -25,6 +25,8 @@ const createUser = async function (req, res) {
             status: false,
             message: "title is required"
         })
+
+
         if (!name) return res.status(400).send({
             status: false,
             message: "name is required"
@@ -65,7 +67,10 @@ const createUser = async function (req, res) {
             message: "Please input the valid email"
         })
 
-        if (!isValidPassword(password)) return res.status(400).send({status: false, message: "Invalid Password: password must contains one upperCase latter, one lowerCase latter, one Number, one special character and min character: 8 & max character 15 "})
+        if (!isValidPassword(password)) return res.status(400).send({
+            status: false,
+            message: "Invalid Password: password must contains one upperCase latter, one lowerCase latter, one Number, one special character and min character: 8 & max character 15 "
+        })
         // let newData1 = await userModel.find({$or: [{email:data.email},{phone:data.phone}]})
         // console.log(newData1)
 

@@ -8,9 +8,9 @@ app.use(express.json());
 app.use("/", route);
 
 
-mongoose.connect("mongodb+srv://Lucifer:lucifer123@mycluster.bdqxxtr.mongodb.net/groupXDatabase?retryWrites=true&w=majority", { 
+mongoose.connect("mongodb+srv://Lucifer:lucifer123@mycluster.bdqxxtr.mongodb.net/group20Database?retryWrites=true&w=majority", { 
     useNewUrlParser: true
-}).then(()=> console.log("MongoDB Connected successfully"))
+}).then(()=> console.log("MongoDB Connected"))
 .catch((err)=> console.log(err))
 
 app.listen(process.env.PORT || 3000, ()=>{
