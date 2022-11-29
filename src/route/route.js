@@ -11,6 +11,7 @@ router.post("/login",loginController.login)
 router.post('/books',authMiddleware.auth, bookController.createBook)
 router.get('/books', bookController.getBooks)
 router.get('/books/:bookId', bookController.getBookByParam)
+router.delete('/books/:bookId', bookController.deleteBook)
 
 
 router.all("/**", (req, res)=>{

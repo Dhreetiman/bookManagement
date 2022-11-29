@@ -1,4 +1,6 @@
 const bookModel = require("../models/bookModel")
+
+//-------------------------Create Book Data------------------------------------------------------
 const {
     isValidEmail,
     isValidName,
@@ -127,7 +129,7 @@ const createBook = async function (req, res) {
 }
 
 
-
+//-----------------------------Get Book data-----------------------------------------------
 
 const getBooks = async function (req, res) {
     try {
@@ -203,6 +205,7 @@ const getBooks = async function (req, res) {
     }
 }
 
+//---------------------------Get Book Data By Path Param------------------------------------
 
 const getBookByParam = async function (req, res) {
     try {
@@ -212,6 +215,7 @@ const getBookByParam = async function (req, res) {
             status: false,
             message: "Book not found by the given ID"
         })
+        if (bookDetails.isDeleted==true) return res.status(404).send({status: false, message: "This Book has been deleted"})
         return res.status(201).send({
             status: true,
             message: "success",
@@ -229,10 +233,54 @@ const getBookByParam = async function (req, res) {
     }
 }
 
+//------------------------Update Book Data-----------------------------------------
 
+
+
+
+
+//-----------------------------Delete Book Data-------------------------------------------
+
+const deleteBook = async function (req, res) {
+    try {
+        let Id = req.params.bookId
+        let checkId = await bookModel.findById(Id)
+        if (!checkId || (checkId.isDeleted == true)) return res.status(404).send({
+            status: false,
+            message: "Book not found or already Deleted"
+        })
+        let deletedData = await bookModel.findOneAndUpdate({
+            _id: Id,
+            isDeleted: false
+        }, {
+            $set: {
+                isDeleted: true,
+                deletedAt: new Date(Date.now())
+            }
+        })
+        if (deletedData) return res.status(200).send({
+            status: true,
+            message: "Book deleted successfully"
+        })
+        else return res.status(404).send({
+            status: false,
+            message: "something went wrong"
+        })
+    } catch (err) {
+        if (err.name == "CastError") return res.status(400).send({
+            status: false,
+            message: `Given bookId ${err.value} is not valid, please provide a valid bookId`
+        })
+        return res.status(500).send({
+            status: false,
+            message: err.message
+        })
+    }
+}
 
 module.exports = {
     createBook,
     getBooks,
-    getBookByParam
+    getBookByParam,
+    deleteBook
 }
