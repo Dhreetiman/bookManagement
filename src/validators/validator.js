@@ -16,7 +16,7 @@ const isValidPhone = function (value) {
 }
 
 const isValidName = function (str) {
-  let nameRegex = /^([a-zA-Z'-.]+(?: [a-zA-Z'-.]+)?)$/
+  let nameRegex = /^[a-z]([-']?[a-z]+)*( [a-z]([-']?[a-z]+)*)+$/i
   if (typeof str === "undefined" || str === null) return false;
   if (typeof str === "string" && str.trim().length === 0) return false;
   if (nameRegex.test(str)) return true;

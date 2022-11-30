@@ -3,14 +3,16 @@ const router = express.Router()
 const userController = require("../controllers/userController")
 const loginController = require("../controllers/loginController")
 const bookController = require("../controllers/bookController")
-const authMiddleware = require("../middleware/auth")
-const authorizationMid = require("../middleware/authorization")
+const middlewares = require("../middleware/auth")
+
+
 
 router.post("/user",userController.createUser)
 router.post("/login",loginController.login)
-router.post('/books',authMiddleware.auth, bookController.createBook)
+router.post('/books',middlewares.authentication, bookController.createBook)
 router.get('/books', bookController.getBooks)
 router.get('/books/:bookId', bookController.getBookByParam)
+router.put('/books/:bookId',bookController.updateBooks)
 router.delete('/books/:bookId', bookController.deleteBook)
 
 
