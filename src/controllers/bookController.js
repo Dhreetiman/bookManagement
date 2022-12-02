@@ -32,7 +32,6 @@ const createBook = async function (req, res) {
             ISBN,
             category,
             subcategory,
-            reviews,
             releasedAt
         } = data
 
@@ -88,14 +87,14 @@ const createBook = async function (req, res) {
             message: "please inter valid subcategory"
         })
 
-        if (!reviews) return res.status(400).send({
-            status: false,
-            message: "Please enter reviews"
-        })
-        if (![1, 2, 3, 4, 5].includes(reviews)) return res.status(400).send({
-            status: false,
-            message: "Invalid review number"
-        })
+        // if (!reviews) return res.status(400).send({
+        //     status: false,
+        //     message: "Please enter reviews"
+        // })
+        // if (![1, 2, 3, 4, 5].includes(reviews)) return res.status(400).send({
+        //     status: false,
+        //     message: "Invalid review number"
+        // })
 
         // if (!idCharacterValid(userId)) return res.status(400).send({
         //     status: false,
@@ -107,7 +106,7 @@ const createBook = async function (req, res) {
                 status: false,
                 message: "Please enter releasedAt"
             })
-        }
+        }                                                     // have to validate the date input
 
         const bookData = await bookModel.create(data)
         res.status(201).send({
@@ -263,7 +262,7 @@ const updateBooks = async function (req, res) {
         if (title) {
             if (!isValidString(title)) return res.status(400).send({
                 status: false,
-                message: "please inter valid title"
+                message: "please enter valid title"
             })
             let findTitle = await bookModel.findOne({
                 title: title
@@ -303,7 +302,7 @@ const updateBooks = async function (req, res) {
 
         return res.status(200).send({
             status: true,
-            msg: "Book updated successfuly",
+            messsage: "Book updated successfuly",
             data: updatedData
         })
 

@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken")
-const bookModel = require("../models/bookModel")
-const userModel = require("../models/userModel")
+const {
+    isValidObjectId
+} = require("mongoose");
+const bookModel = require("../models/bookModel");
 
-const authentication = async function (req, res, next) {
 
+const authentication = function (req, res, next) {
     try {
         let token = req.headers["x-api-key"];
         if (!token) return res.status(400).send({
@@ -11,7 +13,7 @@ const authentication = async function (req, res, next) {
             msg: "token must be present in header"
         })
 
-        let decodedToken = jwt.verify(token, 'shhh', function (err, decodedToken) {
+        let decodedToken = jwt.verify(token, 'Group20', function (err, decodedToken) {
 
             if (err) {
                 return res.status(401).send({
@@ -19,7 +21,9 @@ const authentication = async function (req, res, next) {
                     msg: "invalid Token "
                 })
             } else {
-                req.decodedToken = decodedToken
+                req.decodedToken = decodedToken.userId
+                // console.log(req.decodedToken)
+
                 next()
 
             }
@@ -31,38 +35,44 @@ const authentication = async function (req, res, next) {
     }
 }
 
-
-const authorization = async function (req, res, next) {
-
+const authorisation = async function (req, res, next) {
     try {
-        let getbookId = req.params.bookId;
 
-        if (!idCharacterValid(getbookId)) return res.status(400).send({
-            status: false,
-            msg: "Enter a valid bookId"
-        })
+        let Id = req.decodedToken
+        let idParams = req.params.bookId;
+        if (idParams) {
+            if (!isValidObjectId(idParams)) return res.status(400).send({
+                status: false,
+                message: "Book Id is not valid, please provide a valid Book id"
+            })
+            let checkId = await bookModel.findById(idParams)
+            let userId1 = checkId.userId
+            // console.log(userId1)
+            if (userId1 != Id) return res.status(403).send({
+                status: false,
+                message: "Unauthorised User"
+            })
+        } else {
+            let idBody = req.body.userId
+            if (!isValidObjectId(idBody)) return res.status(400).send({
+                status: false,
+                message: "User id is not valid, pleaes provide a valid User id."
+            })
+            if (idBody != Id) return res.status(403).send({
+                status: false,
+                message: "Unauthorised User"
+            })
 
-        let book = await bookModel.findOne({
-            _id: getbookId
-        })
-        if (!book) return res.status(404).send({
-            status: false,
-            msg: "Book not found !"
-        })
-        if (book.isDeleted == true) return res.status(404).send({
-            status: false,
-            msg: "Book is already been deleted"
-        })
-
-        let userId = book.userId
-        if (userId != req.decodedToken.userId) return res.status(403).send({
-            status: false,
-            msg: "you do not have authorization to this "
-        });
+        }
         next()
     } catch (err) {
-        res.status(500).send({
-            msg: err.message
+        if (err.name == "TypeError") return res.status(404).send({
+            status: false,
+            message: "Could not find Book by the given BoodId"
+        })
+        return res.status(500).send({
+            status: false,
+            message: err.name
         })
     }
 }
@@ -70,5 +80,5 @@ const authorization = async function (req, res, next) {
 
 module.exports = {
     authentication,
-    authorization
+    authorisation
 }

@@ -18,7 +18,7 @@ const createUser = async function (req, res) {
             password
         } = data
         if (Object.keys(data).length == 0) return res.status(400).send({
-            status: true,
+            status: false,
             message: "request body is empty"
         })
         if (!title) return res.status(400).send({
@@ -44,8 +44,7 @@ const createUser = async function (req, res) {
             message: "password is required"
         })
 
-        let titles = ["Mr", "Mrs", "Miss"]
-        if (!titles.includes(title)) return res.status(400).send({
+        if (!["Mr", "Mrs", "Miss"].includes(title)) return res.status(400).send({
             status: false,
             message: "Please provide the title in these options - Mr || Mrs || Miss"
         })
