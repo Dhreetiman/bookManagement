@@ -1,5 +1,6 @@
 const bookModel = require("../models/bookModel");
 const userModel = require("../models/userModel");
+const reviewModel = require("../models/reviewModel")
 
 //-------------------------Create Book Data------------------------------------------------------
 const {
@@ -11,7 +12,8 @@ const {
     isValidString,
     isValidPincode,
     isValidISBN,
-    idCharacterValid
+    idCharacterValid,
+    isValidDate
 } = require('../validators/validator')
 
 const createBook = async function (req, res) {
@@ -58,7 +60,10 @@ const createBook = async function (req, res) {
             message: "Please enter userId"
         })
         let checkUser = await userModel.findById(userId)
-        if (!checkUser) return res.status(404).send({status: false, message: "User is not registered"})
+        if (!checkUser) return res.status(404).send({
+            status: false,
+            message: "User is not registered"
+        })
 
         if (!ISBN) return res.status(400).send({
             status: false,
@@ -84,7 +89,7 @@ const createBook = async function (req, res) {
         })
         if (!isValidString(subcategory)) return res.status(400).send({
             status: false,
-            message: "please inter valid subcategory"
+            message: "please enter valid subcategory"
         })
 
         // if (!reviews) return res.status(400).send({
@@ -106,7 +111,11 @@ const createBook = async function (req, res) {
                 status: false,
                 message: "Please enter releasedAt"
             })
-        }                                                     // have to validate the date input
+        }
+        if (!isValidDate(releasedAt)) return res.status(400).send({
+            status: false,
+            message: "Date format should be in YYYY-MM-DD"
+        }) // have to validate the date input
 
         const bookData = await bookModel.create(data)
         res.status(201).send({
@@ -139,70 +148,58 @@ const createBook = async function (req, res) {
 
 const getBooks = async function (req, res) {
     try {
-        if (req.query) {
-            let {
-                userId,
-                category,
-                subcategory
-            } = req.query
-            let obj = {}
+        // const {userId,subcategory,category} = req.query;
 
-            if (userId) {
-                obj.userId = userId
-            }
-            if (category) {
-                obj.category = category
-            }
-            if (subcategory) {
-                obj.subcategory = subcategory
-            }
+        const book = await bookModel.find({$and:[{isDeleted:false},req.query]}).select({
+            _id: 1,
+            title: 1,
+            excerpt: 1,
+            userId: 1,
+            category: 1,
+            releasedAt: 1,
+            reviews: 1
+        }).sort({
+            title: 1
+        }).lean()
 
-            if (Object.keys.length == 0) return res.status(400).send({
+        
+        // console.log(book.title);
+
+        // let review = await reviewModel.find({
+        //     $and: [{
+        //         bookId: Id
+        //     }, {
+        //         isDeleted: false
+        //     }]
+        // }).select({
+        //     __v: 0,
+        //     isDeleted: 0,
+        //     createdAt: 0,
+        //     updatedAt: 0
+        // })
+
+        if (book.length == 0) {
+            return res.status(404).send({
                 status: false,
-                message: "Invalid query params"
-            })
+                msg: "Document doesnt exist"
+            });
+        }
 
-            obj.isDeleted = false
-            const bookDetals = await bookModel.find(obj).select({
-                title: 1,
-                excerpt: 1,
-                userId: 1,
-                category: 1,
-                reviews: 1,
-                releasedAt: 1
-            })
-            if (!bookDetals) {
-                return res.status(404).send({
-                    status: false,
-                    msg: "No book found for given data"
-                })
-            } else {
-                bookDetals.sort(function (a, b) {
-                    if (a.title.toLocaleLowerCase() < b.title.toLocaleLowerCase) return -1
-                    if (a.title.toLocaleLowerCase() > b.title.toLocaleLowerCase) return 1
-                    return 0
-                })
-                return res.status(200).send({
-                    status: true,
-                    message: 'Success',
-                    data: bookDetals
-                })
-            }
-        } else {
-            const allBooks = await bookModel.find({
-                isDeleted: false
-            })
+
+
+        if (book) {
             return res.status(200).send({
                 status: true,
-                message: 'Success',
-                data: allBooks
-            })
+                message: 'Books list',
+                count: book.length,
+                data: book
+            });
         }
 
     } catch (err) {
         if (err.name == "CastError") return res.status(400).send({
             status: false,
-            message: `Given bookId ${err.value} is not valid, please provide a valid bookId`
+            message: `Given userId ${err.value} is not valid, please provide a valid userId`
         })
         return res.status(500).send({
             status: false,
@@ -216,7 +213,7 @@ const getBooks = async function (req, res) {
 const getBookByParam = async function (req, res) {
     try {
         let Id = req.params.bookId
-        let bookDetails = await bookModel.findById(Id)
+        let bookDetails = await bookModel.findById(Id).lean()
         if (!bookDetails) return res.status(404).send({
             status: false,
             message: "Book not found by the given ID"
@@ -225,6 +222,22 @@ const getBookByParam = async function (req, res) {
             status: false,
             message: "This Book has been deleted"
         })
+        let review = await reviewModel.find({
+            $and: [{
+                bookId: Id
+            }, {
+                isDeleted: false
+            }]
+        }).select({
+            __v: 0,
+            isDeleted: 0,
+            createdAt: 0,
+            updatedAt: 0
+        })
+        // console.log(reviewData)
+        bookDetails.reviewData = review
+        console.log(bookDetails);
+
         return res.status(201).send({
             status: true,
             message: "success",

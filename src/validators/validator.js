@@ -48,6 +48,11 @@ const idCharacterValid = function (value) {
   if (validId.test(value)) return true;
 };
 
+const isValidDate = function(date){
+  let dateRegex = /^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/gm
+  if (dateRegex.test(date)) return true
+}
+
 
 module.exports = {
   isValidEmail,
@@ -58,5 +63,6 @@ module.exports = {
   isValidString,
   isValidPincode,
   isValidISBN,
-  idCharacterValid
+  idCharacterValid,
+  isValidDate
 }

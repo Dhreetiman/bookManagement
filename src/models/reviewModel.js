@@ -12,7 +12,7 @@ const reviewSchema = new mongoose.Schema({
         default: 'Guest',
         trim: true
 
-    },
+    },                  // i have find reviewer name from data base if not found then i have write by defaut
     reviewedAt: {
         type: Date,
         required: true,
