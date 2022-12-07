@@ -1,30 +1,33 @@
-const express = require('express')
+const express = require("express")
 const router = express.Router()
-const userController = require("../controllers/userController")
-const loginController = require("../controllers/loginController")
-const bookController = require("../controllers/bookController")
-const middlewares = require("../middleware/auth")
-const reviewController = require("../controllers/reviewController")
+const userController = require("../controller/userController")
+const bookController = require("../controller/bookController")
+const reviewController = require("../controller/reviewController")
+const middleware = require("../middlware/auth")
 
+router.post("/register", userController.createUser)
 
+router.post("/login", userController.userLogin)
 
-router.post("/user",userController.createUser)
-router.post("/login",loginController.login)
-router.post('/books',middlewares.authentication, middlewares.authorisation, bookController.createBook)
-router.get('/books',middlewares.authentication, bookController.getBooks)
-router.get('/books/:bookId',middlewares.authentication,middlewares.authorisation, bookController.getBookByParam)
-router.put('/books/:bookId',middlewares.authentication,middlewares.authorisation,bookController.updateBooks)
-router.delete('/books/:bookId',middlewares.authentication,middlewares.authorisation, bookController.deleteBook)
+router.post("/books", middleware.authentication,  bookController.createBook)  
 
-router.post("/books/:bookId/review", reviewController.creatReview);
+router.get("/books", middleware.authentication, bookController.getBook)
 
-router.put("/books/:bookId/review/:reviewId", reviewController.updatedReview);
+router.get("/books/:bookId", middleware.authentication, bookController.getBookById)
 
-router.delete("/books/:bookId/review/:reviewId", reviewController.deleteReviewByParam);
+router.put("/books/:bookId", middleware.authentication, middleware.autherisation, bookController.updateBook)  
 
+router.delete("/books/:bookId", middleware.authentication, middleware.autherisation, bookController.deleteBook)    
 
-router.all("/**", (req, res)=>{
-    return res.status(400).send({status:false, message:"check your URL"})
+router.post("/books/:bookId/review", reviewController.createReview )
+
+router.put("/books/:bookId/review/:reviewId", reviewController.updateReview )
+
+router.delete("/books/:bookId/review/:reviewId", reviewController.deleteReview )
+
+router.all("/*", (req, res)=>{
+    return res.status(400).send({status:false, msg:"invalid http request"})
 })
 
 module.exports = router
+
